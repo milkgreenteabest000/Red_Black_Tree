@@ -461,7 +461,7 @@ void RBTree::fixRemove(Node* node, Node* parent){
             siblingLeft = (sibling) ? sibling->left : nullptr;
             siblingRight = (sibling) ? sibling->right : nullptr;
 
-            //case 4, sibling is black and its right child is red
+            //case 4, sibling is black and its left child is red
             if(sibling) sibling->color = parent->color;
             parent->color = BLACK;
             if(siblingLeft) siblingLeft->color = BLACK;
