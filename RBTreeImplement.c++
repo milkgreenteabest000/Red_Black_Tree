@@ -35,8 +35,8 @@ class RBTree{
         Node* root_;
 
         //some operation make the insert and remove function easier
-        void rightRotation(Node*& node);        //right rotations used during balancing
-        void leftRotation(Node*& node);         //left rotations used during balancing
+        void rightRotation(Node* node);        //right rotations used during balancing
+        void leftRotation(Node* node);         //left rotations used during balancing
         void replace(Node* a, Node* b);         //replace node 'a' with node 'b' in the tree structure (but not deleting a)
         Node* findSuccessor(Node* node);        //find the in-order successor (minimum in right subtree)
 
@@ -44,15 +44,18 @@ class RBTree{
         void fixInsert(Node* node);
         void fixRemove(Node* node, Node* parent);
 
-        //recursive helpers for cleanup and printing
+        //recursive helpers for cleanup, printing, dfs to check the number of black nodes
         void clearTree(Node* node);
         void printTreeInorder(Node* node) const;
         void printTreePreorder(Node* node) const;
+        int dfsCheckBRTree(Node* node, bool& isViolated) const;
+
     public:
-        //constructor, destructor, print interface
+        //constructor, destructor, print, checkBRTree interface
         RBTree();
         ~RBTree();
         void print() const;
+        bool isValidRBTree() const;
 
         //insert, remove interface and implement
         void insert(const int newData);
@@ -65,28 +68,35 @@ int main(){
     cin >> input;
 
     RBTree tree;
+    tree.isValidRBTree();
     for(int i = 0; i < 10; i++){
         cout << "insert: " << i * 10 << endl;
         tree.insert(i * 10);
         tree.print();
+        tree.isValidRBTree();
     }
     for(int i = 5; i >= 0; i--){
         cout << "remove: " << i * 10 << endl;
         tree.remove(i * 10);
         tree.print();
+        tree.isValidRBTree();
     }
     cout << "remove: " << 80 << endl;
     tree.remove(80);
     tree.print();
+    tree.isValidRBTree();
     cout << "remove: " << 90 << endl;
     tree.remove(90);
     tree.print();
+    tree.isValidRBTree();
     cout << "remove: " << 70 << endl;
     tree.remove(70);
     tree.print();
+    tree.isValidRBTree();
     cout << "remove: " << 60 << endl;
     tree.remove(60);
     tree.print();
+    tree.isValidRBTree();
     return 0;
 }
 
@@ -101,6 +111,49 @@ RBTree::~RBTree(){
 
 //print the entire tree using pre-order traversal
 void RBTree::print() const {printTreePreorder(this->root_);}
+
+//check if the tree BRTree
+bool RBTree::isValidRBTree() const {
+    if (!root_) return true;  //nullptr considered true
+
+    //root should be black
+    if (root_->color != BLACK) return false;
+
+    bool isViolated = 0;
+    dfsCheckBRTree(this->root_, isViolated);
+
+    if(!isViolated) return true;
+
+    for(int i = 0; i < 10; i++){
+        cout << "NOOOOOOOOOOOOOOOO" << endl;
+    }
+    return false;
+}
+
+//dfs to check if the tree BRTree
+int RBTree::dfsCheckBRTree(Node* node, bool& isViolated) const{
+    //define the black-height of empty tree is one
+    if(node == nullptr) return 1;
+
+    //check if consecutive red nodes
+    if(node && node->color == RED){
+        if(node->right && node->right->color == RED) isViolated = 1;
+        if(node->left && node->left->color == RED) isViolated = 1;
+    }
+
+    if(isViolated) return -1;
+
+    //check if the two path has different numbers of nodes
+    int leftHeight = dfsCheckBRTree(node->left, isViolated);
+    int rightHeight = dfsCheckBRTree(node->right, isViolated);
+
+    if(isViolated || leftHeight != rightHeight){
+        isViolated = 1; 
+        return -1;
+    }
+
+    return ( ((node->color == BLACK) ? 1 : 0) + leftHeight );
+}
 
 //in-order traversal: left -> node -> right
 void RBTree::printTreeInorder(Node* node) const{
@@ -174,7 +227,7 @@ void RBTree::clearTree(Node* node){
 }
 
 //perform a right rotation on the given node
-void RBTree::rightRotation(Node*& node){
+void RBTree::rightRotation(Node* node){
     //if the node or its left child does not exist, return directly
     if(!node || !node->left) return;
 
@@ -185,23 +238,15 @@ void RBTree::rightRotation(Node*& node){
     if(child->right) child->right->parent = node;
 
     //step 2: adjust child's parent pointer
-    child->right = node;
-    if(!node->parent){      //no parent -> node is root -> adjust root
-        this->root_ = child;
-        child->parent = nullptr;
-    }
-    else{       //adjust child's parent
-        child->parent = node->parent;
-        if(node->parent->left == node) node->parent->left = child;
-        else node->parent->right = child;
-    }
+    replace(node, child);
 
-    //step 3: adjust node's parent pointer
+    //step 3: adjust the relation between node and child
+    child->right = node;
     node->parent = child;
 }
 
 //perform a left rotation on the given node
-void RBTree::leftRotation(Node*& node){
+void RBTree::leftRotation(Node* node){
     //if the node or its right child does not exist, return directly
     if(!node || !node->right) return;
 
@@ -212,19 +257,11 @@ void RBTree::leftRotation(Node*& node){
     if(child->left) child->left->parent = node;
 
     //step 2: adjust child's parent pointer
+    replace(node, child);
+
+
+    //step 3: adjust the relation between node and child
     child->left = node;
-    if(!node->parent){      //no parent -> node is root -> adjust root
-        this->root_ = child;
-        child->parent = nullptr;
-    }
-    else{       //adjust child's parent
-        child->parent = node->parent;
-        if(node->parent->left == node) node->parent->left = child;
-        else node->parent->right = child;
-    }
-
-
-    //step 3: adjust node's parent pointer
     node->parent = child;
 }
 
