@@ -259,7 +259,6 @@ void RBTree::leftRotation(Node* node){
     //step 2: adjust child's parent pointer
     replace(node, child);
 
-
     //step 3: adjust the relation between node and child
     child->left = node;
     node->parent = child;
@@ -327,7 +326,11 @@ void RBTree::fixInsert(Node* node){
             }
 
             //check if case 2, node in LR of grandparent
-            if(parent->right == node) leftRotation(parent);
+            if(parent->right == node){
+                leftRotation(parent);
+                node = parent;
+                parent = node->parent;
+            }
             
             //deal with case 3, node in LL of grandparent
             grandparent->color = RED;
@@ -353,7 +356,11 @@ void RBTree::fixInsert(Node* node){
             }
 
             //check if case 2, node in RL of grandparent
-            if(parent->left == node) rightRotation(parent);
+            if(parent->left == node){
+                rightRotation(parent);
+                node = parent;
+                parent = node->parent;
+            }
             
             //deal with case 3, node in RR of grandparent
             grandparent->color = RED;
