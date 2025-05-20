@@ -448,7 +448,7 @@ void RBTree::fixRemove(Node* node, Node* parent){
             }
 
             //case 3, sibling is black and its left child is red
-            if(siblingLeft && siblingLeft->color == RED){
+            if(!siblingRight && siblingRight->color == BLACK){
                 if(siblingLeft) siblingLeft->color = BLACK;
                 if(sibling) sibling->color = RED;
                 rightRotation(sibling);
@@ -494,7 +494,7 @@ void RBTree::fixRemove(Node* node, Node* parent){
             }
 
             //case 3, sibling is black and its right child is red
-            if(siblingRight && siblingRight->color == RED){
+            if(!siblingLeft && siblingLeft->color == BLACK){
                 if(siblingRight) siblingRight->color = BLACK;
                 if(sibling) sibling->color = RED;
                 leftRotation(sibling);
